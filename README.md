@@ -1,1 +1,5 @@
-# SC-AI.cpp
+iterami/SC-AI.cpp
+-----------------
+
+Requires:
+* [bwapi/bwapi](https://github.com/bwapi/bwapi)
