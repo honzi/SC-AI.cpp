@@ -47,7 +47,7 @@ void ai::onFrame(){
         // Handle Command Centers, Hatcheries, and Nexuses.
         }else if(u->getType().isResourceDepot()){
             if(!u->isIdle()){
-                continue
+                continue;
             }
 
             // Build workers.
