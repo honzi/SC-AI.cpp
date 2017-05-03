@@ -30,22 +30,26 @@ void ai::onFrame(){
 
         // Handle workers.
         if(u->getType().isWorker()){
-            if(u->isIdle()){
-                if(u->isCarryingMinerals()
-                  || u->isCarryingGas()){
-                    u->returnCargo();
+            if(!u->isIdle()){
+                continue;
+            }
 
-                }else{
-                    u->gather(u->getClosestUnit(IsMineralField || IsRefinery));
-                }
+            if(u->isCarryingMinerals()
+              || u->isCarryingGas()){
+                u->returnCargo();
+
+            }else{
+                u->gather(u->getClosestUnit(IsMineralField || IsRefinery));
             }
 
         // Handle Command Centers, Hatcheries, and Nexuses.
         }else if(u->getType().isResourceDepot()){
-            // Build workers.
-            if(u->isIdle()){
-                u->train(u->getType().getRace().getWorker());
+            if(!u->isIdle()){
+                continue
             }
+
+            // Build workers.
+            u->train(u->getType().getRace().getWorker());
         }
     }
 }
