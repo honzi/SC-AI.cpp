@@ -31,8 +31,8 @@ void ai::onFrame(){
         // Handle workers.
         if(u->getType().isWorker()){
             if(u->isIdle()){
-                if(u->isCarryingGas()
-                  || u->isCarryingMinerals()){
+                if(u->isCarryingMinerals()
+                  || u->isCarryingGas()){
                     u->returnCargo();
 
                 }else{
