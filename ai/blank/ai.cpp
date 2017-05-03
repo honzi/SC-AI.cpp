@@ -35,7 +35,7 @@ void ai::onSendText(std::string text){
 void ai::onStart(){
     Broodwar->setCommandOptimizationLevel(2);
 
-    Broodwar->sendText('iterami/SC-AI.cpp: blank AI loaded');
+    Broodwar->sendText("iterami/SC-AI.cpp: blank AI loaded");
 }
 
 void ai::onUnitComplete(BWAPI::Unit unit){
