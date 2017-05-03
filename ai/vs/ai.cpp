@@ -49,7 +49,7 @@ void ai::onSendText(std::string text){
 void ai::onStart(){
     Broodwar->setCommandOptimizationLevel(2);
 
-    Broodwar->sendText("iterami/SC-AI.cpp blank");
+    Broodwar->sendText("iterami/SC-AI.cpp vs");
 }
 
 void ai::onUnitComplete(BWAPI::Unit unit){
