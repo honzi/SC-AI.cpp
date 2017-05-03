@@ -38,6 +38,13 @@ void ai::onFrame(){
                     u->gather(u->getClosestUnit(IsMineralField || IsRefinery));
                 }
             }
+
+        // Handle Command Centers, Hatcheries, and Nexuses.
+        }else if(u->getType().isResourceDepot()){
+            // Build workers.
+            if(u->isIdle()){
+                u->train(u->getType().getRace().getWorker());
+            }
         }
     }
 }
