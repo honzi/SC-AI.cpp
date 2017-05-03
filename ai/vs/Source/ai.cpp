@@ -34,10 +34,12 @@ void ai::onFrame(){
                 continue;
             }
 
+            // Return resources.
             if(u->isCarryingMinerals()
               || u->isCarryingGas()){
                 u->returnCargo();
 
+            // Gather resources.
             }else{
                 u->gather(u->getClosestUnit(IsMineralField || IsRefinery));
             }
