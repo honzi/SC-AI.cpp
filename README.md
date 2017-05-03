@@ -2,6 +2,7 @@ iterami/SC-AI.cpp
 -----------------
 
 * `blank`: skeleton AI.
+* `vs`: AI for competitive multiplayer.
 
 ---
 
