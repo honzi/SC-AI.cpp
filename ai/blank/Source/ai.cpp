@@ -8,10 +8,10 @@ void ai::onEnd(bool isWinner){
 }
 
 void ai::onFrame(){
-    if(Broodwar->isReplay()
+    if(!Broodwar->self()
+      || Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0
       || Broodwar->isPaused()
-      || !Broodwar->self()
-      || Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0){
+      || Broodwar->isReplay()){
         return;
     }
 

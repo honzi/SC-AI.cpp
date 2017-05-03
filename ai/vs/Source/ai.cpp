@@ -8,10 +8,10 @@ void ai::onEnd(bool isWinner){
 }
 
 void ai::onFrame(){
-    if(Broodwar->isReplay()
+    if(!Broodwar->self()
+      || Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0
       || Broodwar->isPaused()
-      || !Broodwar->self()
-      || Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0){
+      || Broodwar->isReplay()){
         return;
     }
 
@@ -31,7 +31,8 @@ void ai::onFrame(){
         // Handle workers.
         if(u->getType().isWorker()){
             if(u->isIdle()){
-                if(u->isCarryingGas() || u->isCarryingMinerals()){
+                if(u->isCarryingGas()
+                  || u->isCarryingMinerals()){
                     u->returnCargo();
 
                 }else{
