@@ -1,7 +1,7 @@
 #pragma once
 #include <BWAPI.h>
 
-class iteramiSCAI : public BWAPI::AIModule{
+class ai : public BWAPI::AIModule{
   public:
     virtual void onEnd(bool isWinner);
     virtual void onFrame();
