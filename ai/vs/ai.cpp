@@ -27,6 +27,18 @@ void ai::onFrame(){
           || u->isStuck()){
             continue;
         }
+
+        // Handle workers.
+        if(u->getType().isWorker()){
+            if(u->isIdle()){
+                if(u->isCarryingGas() || u->isCarryingMinerals()){
+                    u->returnCargo();
+
+                }else{
+                    u->gather(u->getClosestUnit(IsMineralField || IsRefinery));
+                }
+            }
+        }
     }
 }
 
