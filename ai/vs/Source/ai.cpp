@@ -1,5 +1,7 @@
 #include "ai.h"
 #include <iostream>
+#include <stdlib.h>
+#include <time.h>
 
 using namespace BWAPI;
 using namespace Filter;
@@ -15,43 +17,56 @@ void ai::onFrame(){
         return;
     }
 
-    for(auto &u : Broodwar->self()->getUnits()){
-        if(!u->exists()
-          || !u->isCompleted()
-          || u->isConstructing()
-          || u->isLoaded()
-          || u->isLockedDown()
-          || u->isMaelstrommed()
-          || !u->isPowered()
-          || u->isStasised()
-          || u->isStuck()){
+    for(auto &unit : Broodwar->self()->getUnits()){
+        if(!unit->exists()
+          || !unit->isCompleted()
+          || unit->isConstructing()
+          || unit->isLoaded()
+          || unit->isLockedDown()
+          || unit->isMaelstrommed()
+          || !unit->isPowered()
+          || unit->isStasised()
+          || unit->isStuck()){
             continue;
         }
 
+        UnitType unitType = unit->getType();
+
         // Handle workers.
-        if(u->getType().isWorker()){
-            if(!u->isIdle()){
+        if(unitType.isWorker()){
+            if(!unit->isIdle()){
                 continue;
             }
 
             // Return resources.
-            if(u->isCarryingMinerals()
-              || u->isCarryingGas()){
-                u->returnCargo();
+            if(unit->isCarryingMinerals()
+              || unit->isCarryingGas()){
+                unit->returnCargo();
 
             // Gather resources.
             }else{
-                u->gather(u->getClosestUnit(IsMineralField || IsRefinery));
+                unit->gather(unit->getClosestUnit(IsMineralField || IsRefinery));
             }
 
         // Handle Command Centers, Hatcheries, and Nexuses.
-        }else if(u->getType().isResourceDepot()){
-            if(!u->isIdle()){
+        }else if(unitType.isResourceDepot()){
+            if(!unit->isIdle()){
                 continue;
             }
 
             // Build workers.
-            u->train(u->getType().getRace().getWorker());
+            unit->train(unit->getType().getRace().getWorker());
+
+        // Everything else should scout.
+        }else{
+            if(!unit->isIdle()){
+                continue;
+            }
+
+            Position position = unit->getPosition();
+            position.x += rand() % 501 - 250;
+            position.y += rand() % 501 - 250;
+            unit->move(position);
         }
     }
 }
@@ -74,6 +89,8 @@ void ai::onSendText(std::string text){
 
 void ai::onStart(){
     Broodwar->setCommandOptimizationLevel(2);
+
+    srand(time(NULL));
 
     Broodwar->sendText("iterami/SC-AI.cpp vs");
 }

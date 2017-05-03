@@ -15,16 +15,16 @@ void ai::onFrame(){
         return;
     }
 
-    for(auto &u : Broodwar->self()->getUnits()){
-        if(!u->exists()
-          || !u->isCompleted()
-          || u->isConstructing()
-          || u->isLoaded()
-          || u->isLockedDown()
-          || u->isMaelstrommed()
-          || !u->isPowered()
-          || u->isStasised()
-          || u->isStuck()){
+    for(auto &unit : Broodwar->self()->getUnits()){
+        if(!unit->exists()
+          || !unit->isCompleted()
+          || unit->isConstructing()
+          || unit->isLoaded()
+          || unit->isLockedDown()
+          || unit->isMaelstrommed()
+          || !unit->isPowered()
+          || unit->isStasised()
+          || unit->isStuck()){
             continue;
         }
     }
