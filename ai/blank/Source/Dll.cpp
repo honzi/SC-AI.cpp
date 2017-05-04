@@ -1,6 +1,7 @@
-#include <BWAPI.h>
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+#include <BWAPI.h>
 #include "ai.h"
 
 extern "C" __declspec(dllexport) void gameInit(BWAPI::Game* game){
