@@ -108,7 +108,7 @@ void ai::onSendText(std::string text){
 }
 
 void ai::onStart(){
-    Broodwar->setCommandOptimizationLevel(2);
+    Broodwar->setCommandOptimizationLevel(1);
 
     srand(time(NULL));
 
