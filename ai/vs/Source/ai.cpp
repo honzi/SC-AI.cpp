@@ -18,6 +18,8 @@ void ai::onFrame(){
     }
 
     for(auto &unit : Broodwar->self()->getUnits()){
+        int supplyTotal = Broodwar->self()->supplyTotal();
+
         if(unit->exists()
           && unit->isCompleted()
           && !unit->isConstructing()
@@ -42,7 +44,7 @@ void ai::onFrame(){
 
             // Handle Command Centers, Hatcheries, and Nexuses.
             }else if(unit->getType().isResourceDepot()){
-                // Build workers.
+                // Train workers.
                 unit->train(unit->getType().getRace().getWorker());
 
             // Everything else should scout.
@@ -59,7 +61,8 @@ void ai::onFrame(){
 
         // Handle insufficient supply error by
         //   building Pylon, building Supply Depot, or training Overlord.
-        if(lastError == Errors::Insufficient_Supply){
+        if(supplyTotal < 200
+          && lastError == Errors::Insufficient_Supply){
             UnitType supplyProviderType = unit->getType().getRace().getSupplyProvider();
 
             if(Broodwar->self()->incompleteUnitCount(supplyProviderType) == 0){
