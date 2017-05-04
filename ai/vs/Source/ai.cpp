@@ -18,21 +18,18 @@ void ai::onFrame(){
     }
 
     for(auto &unit : Broodwar->self()->getUnits()){
-        if(!unit->exists()
-          || !unit->isCompleted()
-          || unit->isConstructing()
-          || unit->isLoaded()
-          || unit->isLockedDown()
-          || unit->isMaelstrommed()
-          || !unit->isPowered()
-          || unit->isStasised()
-          || unit->isStuck()){
-            continue;
-        }
-
-        // Handle workers.
-        if(unit->getType().isWorker()){
-            if(unit->isIdle()){
+        if(unit->exists()
+          && unit->isCompleted()
+          && !unit->isConstructing()
+          && !unit->isLoaded()
+          && !unit->isLockedDown()
+          && !unit->isMaelstrommed()
+          && unit->isPowered()
+          && !unit->isStasised()
+          && !unit->isStuck()
+          && unit->isIdle()){
+            // Handle workers.
+            if(unit->getType().isWorker()){
                 // Return resources.
                 if(unit->isCarryingMinerals()
                   || unit->isCarryingGas()){
@@ -42,21 +39,19 @@ void ai::onFrame(){
                 }else{
                     unit->gather(unit->getClosestUnit(IsMineralField || IsRefinery));
                 }
-            }
 
-        // Handle Command Centers, Hatcheries, and Nexuses.
-        }else if(unit->getType().isResourceDepot()){
-            if(unit->isIdle()){
+            // Handle Command Centers, Hatcheries, and Nexuses.
+            }else if(unit->getType().isResourceDepot()){
                 // Build workers.
                 unit->train(unit->getType().getRace().getWorker());
-            }
 
-        // Everything else should scout.
-        }else if(unit->isIdle()){
-            Position position = unit->getPosition();
-            position.x += rand() % 501 - 250;
-            position.y += rand() % 501 - 250;
-            unit->move(position);
+            // Everything else should scout.
+            }else{
+                Position position = unit->getPosition();
+                position.x += rand() % 501 - 250;
+                position.y += rand() % 501 - 250;
+                unit->move(position);
+            }
         }
 
         // Check for errors.
