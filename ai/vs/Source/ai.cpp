@@ -63,28 +63,33 @@ void ai::onFrame(){
         //   building Pylon, building Supply Depot, or training Overlord.
         if(supplyTotal < 200
           && lastError == Errors::Insufficient_Supply){
-            UnitType supplyProviderType = unit->getType().getRace().getSupplyProvider();
+            static int lastChecked = 0;
 
-            if(Broodwar->self()->incompleteUnitCount(supplyProviderType) == 0){
-                Unit supplyBuilder = unit->getClosestUnit(GetType == supplyProviderType.whatBuilds().first
-                  && (IsIdle || IsGatheringMinerals)
-                  && IsOwned);
+            if(lastChecked + 400 < Broodwar->getFrameCount()){
+                lastChecked = Broodwar->getFrameCount();
+                UnitType supplyProviderType = unit->getType().getRace().getSupplyProvider();
 
-                if(supplyProviderType.isBuilding()){
-                    /*TilePosition targetBuildLocation = Broodwar->getBuildLocation(
-                      supplyProviderType,
-                      supplyBuilder->getTilePosition()
-                    );
+                if(Broodwar->self()->incompleteUnitCount(supplyProviderType) == 0){
+                    Unit supplyBuilder = unit->getClosestUnit(GetType == supplyProviderType.whatBuilds().first
+                      && (IsIdle || IsGatheringMinerals)
+                      && IsOwned);
 
-                    if(targetBuildLocation){
-                        supplyBuilder->build(
+                    if(supplyProviderType.isBuilding()){
+                        TilePosition targetBuildLocation = Broodwar->getBuildLocation(
                           supplyProviderType,
-                          targetBuildLocation
+                          supplyBuilder->getTilePosition()
                         );
-                    }*/
 
-                }else{
-                    supplyBuilder->train(supplyProviderType);
+                        if(targetBuildLocation){
+                            supplyBuilder->build(
+                              supplyProviderType,
+                              targetBuildLocation
+                            );
+                        }
+
+                    }else{
+                        supplyBuilder->train(supplyProviderType);
+                    }
                 }
             }
         }
