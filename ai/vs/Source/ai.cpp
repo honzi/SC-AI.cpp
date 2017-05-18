@@ -69,17 +69,10 @@ void ai::onFrame(){
                           && IsOwned);
 
                         if(supplyProviderType.isBuilding()){
-                            TilePosition targetBuildLocation = Broodwar->getBuildLocation(
-                              supplyProviderType,
-                              supplyBuilder->getTilePosition()
+                            buildBuilding(
+                              supplyBuilder,
+                              supplyProviderType
                             );
-
-                            if(targetBuildLocation){
-                                supplyBuilder->build(
-                                  supplyProviderType,
-                                  targetBuildLocation
-                                );
-                            }
 
                         }else{
                             supplyBuilder->train(supplyProviderType);
@@ -92,19 +85,12 @@ void ai::onFrame(){
                   && infantryBuildingChecked + 1000 < Broodwar->getFrameCount()){
                     infantryBuildingChecked = Broodwar->getFrameCount();
 
-                    TilePosition targetBuildLocation = Broodwar->getBuildLocation(
-                      infantryBuilding,
-                      unit->getTilePosition()
-                    );
-
-                    if(targetBuildLocation){
-                        if(unit->build(
-                          infantryBuilding,
-                          targetBuildLocation
-                        )){
-                            infantryBuildingNeeded = false;
-                            savingMinerals = 0;
-                        }
+                    if(buildBuilding(
+                      unit,
+                      infantryBuilding
+                    )){
+                        infantryBuildingNeeded = false;
+                        savingMinerals = 0;
                     }
 
                 }else if(unit->isIdle()){
@@ -206,5 +192,21 @@ void ai::onUnitRenegade(BWAPI::Unit unit){
 }
 
 void ai::onUnitShow(BWAPI::Unit unit){
+}
+
+bool buildBuilding(Unit builder, UnitType building){
+    TilePosition targetBuildLocation = Broodwar->getBuildLocation(
+      builing,
+      builder->getTilePosition()
+    );
+
+    if(targetBuildLocation){
+        return builder->build(
+          building,
+          targetBuildLocation
+        );
+    }
+
+    return false;
 }
 
