@@ -18,27 +18,29 @@ void ai::onFrame(){
     }
 
     for(auto &unit : Broodwar->self()->getUnits()){
-        if(unit->exists()
-          && unit->isCompleted()
-          && !unit->isConstructing()
-          && !unit->isLoaded()
-          && !unit->isLockedDown()
-          && !unit->isMaelstrommed()
-          && unit->isPowered()
-          && !unit->isStasised()
-          && !unit->isStuck()
-          && unit->isIdle()){
-            // Build a worker to speed up the throwing process.
-            if(unit->getType().isResourceDepot()){
-                unit->train(unit->getType().getRace().getWorker());
+        if(!unit->exists()
+          || !unit->isCompleted()
+          || unit->isConstructing()
+          || unit->isLoaded()
+          || unit->isLockedDown()
+          || unit->isMaelstrommed()
+          || !unit->isPowered()
+          || unit->isStasised()
+          || unit->isStuck()
+          || !unit->isIdle()){
+            continue;
+        }
 
-            // Make all units attack starting resource depot.
-            }else{
-                unit->attack(Broodwar->getClosestUnit(
-                  unit->getPosition(),
-                  IsResourceDepot
-                ));
-            }
+        // Build a worker to speed up the throwing process.
+        if(unit->getType().isResourceDepot()){
+            unit->train(unit->getType().getRace().getWorker());
+
+        // Make all units attack starting resource depot.
+        }else{
+            unit->attack(Broodwar->getClosestUnit(
+              unit->getPosition(),
+              IsResourceDepot
+            ));
         }
     }
 }
