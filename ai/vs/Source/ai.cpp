@@ -176,6 +176,7 @@ void ai::onStart(){
     // Handle race-specific stuff.
     if(playerRace == Races::Zerg){
         infantryBuilding = UnitTypes::Zerg_Spawning_Pool;
+        infantryType = UnitTypes::Zerg_Zergling;
 
     }else if(playerRace == Races::Terran){
         infantryBuilding = UnitTypes::Terran_Barracks;
