@@ -19,8 +19,10 @@ void ai::onEnd(bool isWinner){
 }
 
 void ai::onFrame(){
+    int frameCount = Broodwar->getFrameCount();
+
     if(!Broodwar->self()
-      || Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0
+      || frameCount % Broodwar->getLatencyFrames() != 0
       || Broodwar->isPaused()
       || Broodwar->isReplay()){
         return;
@@ -45,81 +47,86 @@ void ai::onFrame(){
     }
 
     for(auto &unit : Broodwar->self()->getUnits()){
-        if(unit->exists()
-          && unit->isCompleted()
-          && !unit->isConstructing()
-          && !unit->isLoaded()
-          && !unit->isLockedDown()
-          && !unit->isMaelstrommed()
-          && unit->isPowered()
-          && !unit->isStasised()
-          && !unit->isStuck()){
-            // Handle workers.
-            if(unit->getType().isWorker()){
-                // Handle insufficient supply by building Pylon, building Supply Depot, or training Overlord.
-                if(supplyNeeded
-                  && minerals >= savingMinerals
-                  && supplyChecked + 500 < Broodwar->getFrameCount()){
-                    supplyChecked = Broodwar->getFrameCount();
-                    UnitType supplyProviderType = unit->getType().getRace().getSupplyProvider();
+        if(!unit->exists()
+          || !unit->isCompleted()
+          || unit->isConstructing()
+          || unit->isLoaded()
+          || unit->isLockedDown()
+          || unit->isMaelstrommed()
+          || !unit->isPowered()
+          || unit->isStasised()
+          || unit->isStuck()){
+            continue;
+        }
 
-                    if(Broodwar->self()->incompleteUnitCount(supplyProviderType) == 0){
-                        Unit supplyBuilder = unit->getClosestUnit(GetType == supplyProviderType.whatBuilds().first
-                          && (IsIdle || IsGatheringMinerals)
-                          && IsOwned);
+        // Setup unit information variables.
+        UnitType unitType = unit->getType();
 
-                        if(supplyProviderType.isBuilding()){
-                            buildBuilding(
-                              supplyBuilder,
-                              supplyProviderType
-                            );
+        // Handle workers.
+        if(unitType.isWorker()){
+            // Handle insufficient supply by building Pylon, building Supply Depot, or training Overlord.
+            if(supplyNeeded
+              && minerals >= savingMinerals
+              && supplyChecked + 500 < frameCount){
+                supplyChecked = frameCount;
+                UnitType supplyProviderType = unitType.getRace().getSupplyProvider();
 
-                        }else{
-                            supplyBuilder->train(supplyProviderType);
-                        }
-                    }
+                if(Broodwar->self()->incompleteUnitCount(supplyProviderType) == 0){
+                    Unit supplyBuilder = unit->getClosestUnit(GetType == supplyProviderType.whatBuilds().first
+                      && (IsIdle || IsGatheringMinerals)
+                      && IsOwned);
 
-                // Build Barracks/Gateway/Spawning Pool.
-                }else if(infantryBuildingNeeded
-                  && minerals >= savingMinerals
-                  && infantryBuildingChecked + 1000 < Broodwar->getFrameCount()){
-                    infantryBuildingChecked = Broodwar->getFrameCount();
+                    if(supplyProviderType.isBuilding()){
+                        buildBuilding(
+                          supplyBuilder,
+                          supplyProviderType
+                        );
 
-                    if(buildBuilding(
-                      unit,
-                      infantryBuilding
-                    )){
-                        infantryBuildingNeeded = false;
-                        savingMinerals = 0;
-                    }
-
-                }else if(unit->isIdle()){
-                    // Return resources.
-                    if(unit->isCarryingMinerals()
-                      || unit->isCarryingGas()){
-                        unit->returnCargo();
-
-                    // Gather resources.
                     }else{
-                        unit->gather(unit->getClosestUnit(IsMineralField || IsRefinery));
+                        supplyBuilder->train(supplyProviderType);
                     }
+                }
+
+            // Build Barracks/Gateway/Spawning Pool.
+            }else if(infantryBuildingNeeded
+              && minerals >= savingMinerals
+              && infantryBuildingChecked + 1000 < frameCount){
+                infantryBuildingChecked = frameCount;
+
+                if(buildBuilding(
+                  unit,
+                  infantryBuilding
+                )){
+                    infantryBuildingNeeded = false;
+                    savingMinerals = 0;
                 }
 
             }else if(unit->isIdle()){
-                // Handle Command Centers, Hatcheries, and Nexuses.
-                if(unit->getType().isResourceDepot()){
-                    if(minerals >= savingMinerals + 50){
-                        // Train workers.
-                        unit->train(unit->getType().getRace().getWorker());
-                    }
+                // Return resources.
+                if(unit->isCarryingMinerals()
+                  || unit->isCarryingGas()){
+                    unit->returnCargo();
 
-                // Everything else should scout.
+                // Gather resources.
                 }else{
-                    Position position = unit->getPosition();
-                    position.x += rand() % 501 - 250;
-                    position.y += rand() % 501 - 250;
-                    unit->move(position);
+                    unit->gather(unit->getClosestUnit(IsMineralField || IsRefinery));
                 }
+            }
+
+        }else if(unit->isIdle()){
+            // Handle Command Centers, Hatcheries, and Nexuses.
+            if(unitType.isResourceDepot()){
+                if(minerals >= savingMinerals + 50){
+                    // Train workers.
+                    unit->train(unitType.getRace().getWorker());
+                }
+
+            // Everything else should scout.
+            }else{
+                Position position = unit->getPosition();
+                position.x += rand() % 501 - 250;
+                position.y += rand() % 501 - 250;
+                unit->move(position);
             }
         }
     }
