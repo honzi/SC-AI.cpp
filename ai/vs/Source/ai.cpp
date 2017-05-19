@@ -9,11 +9,14 @@ using namespace Filter;
 // Global variables.
 bool infantryBuildingNeeded;
 bool supplyNeeded;
+int infantryBuildingCheckTimer;
 int savingMinerals;
+int supplyCheckTimer;
 Race playerRace;
-static int supplyChecked;
 static int infantryBuildingChecked;
+static int supplyChecked;
 UnitType infantryBuilding;
+UnitType infantryType;
 
 void ai::onEnd(bool isWinner){
 }
@@ -60,6 +63,7 @@ void ai::onFrame(){
         }
 
         // Setup unit information variables.
+        bool unitIsIdle = unit->isIdle();
         UnitType unitType = unit->getType();
 
         // Handle workers.
@@ -67,9 +71,9 @@ void ai::onFrame(){
             // Handle insufficient supply by building Pylon, building Supply Depot, or training Overlord.
             if(supplyNeeded
               && minerals >= savingMinerals
-              && supplyChecked + 500 < frameCount){
+              && supplyChecked + supplyCheckTimer < frameCount){
                 supplyChecked = frameCount;
-                UnitType supplyProviderType = unitType.getRace().getSupplyProvider();
+                UnitType supplyProviderType = playerRace.getSupplyProvider();
 
                 if(Broodwar->self()->incompleteUnitCount(supplyProviderType) == 0){
                     Unit supplyBuilder = unit->getClosestUnit(GetType == supplyProviderType.whatBuilds().first
@@ -90,7 +94,7 @@ void ai::onFrame(){
             // Build Barracks/Gateway/Spawning Pool.
             }else if(infantryBuildingNeeded
               && minerals >= savingMinerals
-              && infantryBuildingChecked + 1000 < frameCount){
+              && infantryBuildingChecked + infantryBuildingCheckTimer < frameCount){
                 infantryBuildingChecked = frameCount;
 
                 if(buildBuilding(
@@ -101,7 +105,7 @@ void ai::onFrame(){
                     savingMinerals = 0;
                 }
 
-            }else if(unit->isIdle()){
+            }else if(unitIsIdle){
                 // Return resources.
                 if(unit->isCarryingMinerals()
                   || unit->isCarryingGas()){
@@ -113,20 +117,27 @@ void ai::onFrame(){
                 }
             }
 
-        }else if(unit->isIdle()){
+        }else if(unitIsIdle){
             // Handle Command Centers, Hatcheries, and Nexuses.
             if(unitType.isResourceDepot()){
                 if(minerals >= savingMinerals + 50){
                     // Train workers.
-                    unit->train(unitType.getRace().getWorker());
+                    unit->train(playerRace.getWorker());
                 }
 
-            // Everything else should scout.
+            // Handle Barracks and Gateways.
+            }else if(unit->canTrain(infantryType)){
+                if(minerals >= savingMinerals + 100){
+                    // Train Marines and Zealots.
+                    unit->train(infantryType);
+                }
+
+            // Everything else should attack-move scout.
             }else{
                 Position position = unit->getPosition();
                 position.x += rand() % 501 - 250;
                 position.y += rand() % 501 - 250;
-                unit->move(position);
+                unit->attack(position);
             }
         }
     }
@@ -154,10 +165,12 @@ void ai::onStart(){
 
     // Setup global variables.
     infantryBuildingChecked = 0;
+    infantryBuildingCheckTimer = 2000;
     infantryBuildingNeeded = false;
     playerRace = Broodwar->self()->getRace();
     savingMinerals = 0;
     supplyChecked = 0;
+    supplyCheckTimer = 600;
     supplyNeeded = false;
 
     // Handle race-specific stuff.
@@ -166,9 +179,11 @@ void ai::onStart(){
 
     }else if(playerRace == Races::Terran){
         infantryBuilding = UnitTypes::Terran_Barracks;
+        infantryType = UnitTypes::Terran_Marine;
 
     }else{
         infantryBuilding = UnitTypes::Protoss_Gateway;
+        infantryType = UnitTypes::Protoss_Zealot;
     }
 
     Broodwar->sendText("iterami/SC-AI.cpp vs");
