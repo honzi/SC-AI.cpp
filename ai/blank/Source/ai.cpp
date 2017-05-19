@@ -29,7 +29,7 @@ void ai::onSendText(std::string text){
 void ai::onStart(){
     Broodwar->setCommandOptimizationLevel(1);
 
-    Broodwar->sendText("iterami/SC-AI.cpp blank");
+    Broodwar->sendText("glhf");
 }
 
 void ai::onUnitComplete(BWAPI::Unit unit){

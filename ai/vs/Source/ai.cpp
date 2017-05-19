@@ -186,7 +186,7 @@ void ai::onStart(){
         infantryType = UnitTypes::Protoss_Zealot;
     }
 
-    Broodwar->sendText("iterami/SC-AI.cpp vs");
+    Broodwar->sendText("glhf");
 }
 
 void ai::onUnitComplete(BWAPI::Unit unit){

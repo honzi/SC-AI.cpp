@@ -66,7 +66,7 @@ void ai::onStart(){
 
     srand(time(NULL));
 
-    Broodwar->sendText("iterami/SC-AI.cpp throw");
+    Broodwar->sendText("glhf");
 }
 
 void ai::onUnitComplete(BWAPI::Unit unit){
