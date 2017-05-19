@@ -1,7 +1,5 @@
 #include "ai.h"
 #include <iostream>
-#include <stdlib.h>
-#include <time.h>
 
 using namespace BWAPI;
 using namespace Filter;
@@ -63,8 +61,6 @@ void ai::onSendText(std::string text){
 
 void ai::onStart(){
     Broodwar->setCommandOptimizationLevel(1);
-
-    srand(time(NULL));
 
     Broodwar->sendText("glhf");
 }
