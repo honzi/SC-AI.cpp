@@ -11,6 +11,7 @@ bool infantryBuildingNeeded;
 bool supplyNeeded;
 bool supplyProviderTypeIsBuilding;
 int infantryBuildingCheckTimer;
+int infantryCost;
 int savingMinerals;
 int supplyCheckTimer;
 int workerLimit;
@@ -38,7 +39,7 @@ void ai::onFrame(){
     int supplyTotal = Broodwar->self()->supplyTotal();
 
     if(supplyTotal < 200
-      && supplyTotal - Broodwar->self()->supplyUsed() <= 2
+      && supplyTotal - Broodwar->self()->supplyUsed() <= 3
       && Broodwar->self()->incompleteUnitCount(supplyProviderType) == 0){
         savingMinerals = 100;
         supplyNeeded = true;
@@ -131,7 +132,7 @@ void ai::onFrame(){
 
             // Handle Barracks and Gateways.
             }else if(unit->canTrain(infantryType)){
-                if(minerals >= savingMinerals + 100){
+                if(minerals >= savingMinerals + infantryCost){
                     // Train Marines and Zealots.
                     unit->train(infantryType);
                 }
@@ -184,14 +185,17 @@ void ai::onStart(){
     // Handle race-specific stuff.
     if(playerRace == Races::Zerg){
         infantryBuilding = UnitTypes::Zerg_Spawning_Pool;
+        infantryCost = 50;
         infantryType = UnitTypes::Zerg_Zergling;
 
     }else if(playerRace == Races::Terran){
         infantryBuilding = UnitTypes::Terran_Barracks;
+        infantryCost = 50;
         infantryType = UnitTypes::Terran_Marine;
 
     }else{
         infantryBuilding = UnitTypes::Protoss_Gateway;
+        infantryCost = 100;
         infantryType = UnitTypes::Protoss_Zealot;
     }
 
