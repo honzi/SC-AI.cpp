@@ -37,7 +37,8 @@ void ai::onFrame(){
     int supplyTotal = Broodwar->self()->supplyTotal();
 
     if(supplyTotal < 200
-      && supplyTotal - Broodwar->self()->supplyUsed() <= 2){
+      && supplyTotal - Broodwar->self()->supplyUsed() <= 2
+      && Broodwar->self()->incompleteUnitCount(supplyProviderType) == 0){
         savingMinerals = 100;
         supplyNeeded = true;
 
@@ -76,20 +77,18 @@ void ai::onFrame(){
               && supplyChecked + supplyCheckTimer < frameCount){
                 supplyChecked = frameCount;
 
-                if(Broodwar->self()->incompleteUnitCount(supplyProviderType) == 0){
-                    Unit supplyBuilder = unit->getClosestUnit(GetType == supplyProviderType.whatBuilds().first
-                      && (IsIdle || IsGatheringMinerals)
-                      && IsOwned);
+                Unit supplyBuilder = unit->getClosestUnit(GetType == supplyProviderType.whatBuilds().first
+                  && (IsIdle || IsGatheringMinerals)
+                  && IsOwned);
 
-                    if(supplyProviderTypeIsBuilding){
-                        buildBuilding(
-                          supplyBuilder,
-                          supplyProviderType
-                        );
+                if(supplyProviderTypeIsBuilding){
+                    buildBuilding(
+                      supplyBuilder,
+                      supplyProviderType
+                    );
 
-                    }else{
-                        supplyBuilder->train(supplyProviderType);
-                    }
+                }else{
+                    supplyBuilder->train(supplyProviderType);
                 }
 
             // Build Barracks/Gateway/Spawning Pool.
