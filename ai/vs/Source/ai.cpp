@@ -9,6 +9,7 @@ using namespace Filter;
 // Global variables.
 bool infantryBuildingNeeded;
 bool supplyNeeded;
+bool supplyProviderTypeIsBuilding;
 int infantryBuildingCheckTimer;
 int savingMinerals;
 int supplyCheckTimer;
@@ -17,6 +18,7 @@ static int infantryBuildingChecked;
 static int supplyChecked;
 UnitType infantryBuilding;
 UnitType infantryType;
+UnitType supplyProviderType;
 
 void ai::onEnd(bool isWinner){
 }
@@ -73,14 +75,13 @@ void ai::onFrame(){
               && minerals >= savingMinerals
               && supplyChecked + supplyCheckTimer < frameCount){
                 supplyChecked = frameCount;
-                UnitType supplyProviderType = playerRace.getSupplyProvider();
 
                 if(Broodwar->self()->incompleteUnitCount(supplyProviderType) == 0){
                     Unit supplyBuilder = unit->getClosestUnit(GetType == supplyProviderType.whatBuilds().first
                       && (IsIdle || IsGatheringMinerals)
                       && IsOwned);
 
-                    if(supplyProviderType.isBuilding()){
+                    if(supplyProviderTypeIsBuilding){
                         buildBuilding(
                           supplyBuilder,
                           supplyProviderType
@@ -172,6 +173,9 @@ void ai::onStart(){
     supplyChecked = 0;
     supplyCheckTimer = 600;
     supplyNeeded = false;
+    supplyProviderType = playerRace.getSupplyProvider();
+
+    supplyProviderTypeIsBuilding = supplyProviderType.isBuilding();
 
     // Handle race-specific stuff.
     if(playerRace == Races::Zerg){
