@@ -13,6 +13,7 @@ bool supplyProviderTypeIsBuilding;
 int infantryBuildingCheckTimer;
 int savingMinerals;
 int supplyCheckTimer;
+int workerLimit;
 Race playerRace;
 static int infantryBuildingChecked;
 static int supplyChecked;
@@ -120,9 +121,12 @@ void ai::onFrame(){
         }else if(unitIsIdle){
             // Handle Command Centers, Hatcheries, and Nexuses.
             if(unitType.isResourceDepot()){
-                if(minerals >= savingMinerals + 50){
+                UnitType workerType = playerRace.getWorker();
+
+                if(Broodwar->self()->allUnitCount(workerType) < workerLimit
+                  && minerals >= savingMinerals + 50){
                     // Train workers.
-                    unit->train(playerRace.getWorker());
+                    unit->train(workerType);
                 }
 
             // Handle Barracks and Gateways.
@@ -173,6 +177,7 @@ void ai::onStart(){
     supplyCheckTimer = 600;
     supplyNeeded = false;
     supplyProviderType = playerRace.getSupplyProvider();
+    workerLimit = 25;
 
     supplyProviderTypeIsBuilding = supplyProviderType.isBuilding();
 
