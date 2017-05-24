@@ -7,10 +7,10 @@ using namespace BWAPI;
 using namespace Filter;
 
 // Global variables.
-bool infantryBuildingNeeded;
 bool supplyNeeded;
 bool supplyProviderTypeIsBuilding;
 int infantryBuildingCheckTimer;
+int infantryBuildingLimit;
 int infantryCost;
 int savingMinerals;
 int supplyCheckTimer;
@@ -35,6 +35,7 @@ void ai::onFrame(){
         return;
     }
 
+    int infantryBuildingCount = Broodwar->self()->completedUnitCount(infantryBuilding);
     int minerals = Broodwar->self()->minerals();
     int supplyTotal = Broodwar->self()->supplyTotal();
 
@@ -49,8 +50,8 @@ void ai::onFrame(){
         supplyNeeded = false;
     }
 
-    if(minerals > 200){
-        infantryBuildingNeeded = true;
+    if(minerals > 200
+      && infantryBuildingCount < infantryBuildingLimit){
         savingMinerals = 200;
     }
 
@@ -94,7 +95,7 @@ void ai::onFrame(){
                 }
 
             // Build Barracks/Gateway/Spawning Pool.
-            }else if(infantryBuildingNeeded
+            }else if(infantryBuildingCount < infantryBuildingLimit
               && minerals >= savingMinerals
               && infantryBuildingChecked + infantryBuildingCheckTimer < frameCount){
                 infantryBuildingChecked = frameCount;
@@ -103,7 +104,6 @@ void ai::onFrame(){
                   unit,
                   infantryBuilding
                 )){
-                    infantryBuildingNeeded = false;
                     savingMinerals = 0;
                 }
 
@@ -171,7 +171,6 @@ void ai::onStart(){
     // Setup global variables.
     infantryBuildingChecked = 0;
     infantryBuildingCheckTimer = 2000;
-    infantryBuildingNeeded = false;
     playerRace = Broodwar->self()->getRace();
     savingMinerals = 0;
     supplyChecked = 0;
@@ -185,16 +184,19 @@ void ai::onStart(){
     // Handle race-specific stuff.
     if(playerRace == Races::Zerg){
         infantryBuilding = UnitTypes::Zerg_Spawning_Pool;
+        infantryBuildingLimit = 1;
         infantryCost = 50;
         infantryType = UnitTypes::Zerg_Zergling;
 
     }else if(playerRace == Races::Terran){
         infantryBuilding = UnitTypes::Terran_Barracks;
+        infantryBuildingLimit = 10;
         infantryCost = 50;
         infantryType = UnitTypes::Terran_Marine;
 
     }else{
         infantryBuilding = UnitTypes::Protoss_Gateway;
+        infantryBuildingLimit = 10;
         infantryCost = 100;
         infantryType = UnitTypes::Protoss_Zealot;
     }
