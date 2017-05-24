@@ -21,6 +21,7 @@ static int supplyChecked;
 UnitType infantryBuilding;
 UnitType infantryType;
 UnitType supplyProviderType;
+UnitType workerType;
 
 void ai::onEnd(bool isWinner){
 }
@@ -35,9 +36,10 @@ void ai::onFrame(){
         return;
     }
 
-    int infantryBuildingCount = Broodwar->self()->completedUnitCount(infantryBuilding);
+    int infantryBuildingCount = Broodwar->self()->allUnitCount(infantryBuilding);
     int minerals = Broodwar->self()->minerals();
     int supplyTotal = Broodwar->self()->supplyTotal();
+    int workerCount = Broodwar->self()->allUnitCount(workerType);
 
     if(supplyTotal < 200
       && supplyTotal - Broodwar->self()->supplyUsed() <= 3
@@ -122,16 +124,15 @@ void ai::onFrame(){
         }else if(unitIsIdle){
             // Handle Command Centers, Hatcheries, and Nexuses.
             if(unitType.isResourceDepot()){
-                UnitType workerType = playerRace.getWorker();
-
-                if(Broodwar->self()->allUnitCount(workerType) < workerLimit
+                if(workerCount < workerLimit
                   && minerals >= savingMinerals + 50){
                     // Train workers.
                     unit->train(workerType);
                 }
 
             // Handle Barracks and Gateways.
-            }else if(unit->canTrain(infantryType)){
+            }else if(playerRace != Races::Zerg
+              && unit->canTrain(infantryType)){
                 if(minerals >= savingMinerals + infantryCost){
                     // Train Marines and Zealots.
                     unit->train(infantryType);
@@ -142,7 +143,7 @@ void ai::onFrame(){
                 Position position = unit->getPosition();
                 position.x += rand() % 501 - 250;
                 position.y += rand() % 501 - 250;
-                unit->attack(position);
+                unit->attack(position) || unit->move(position);
             }
         }
     }
@@ -180,6 +181,7 @@ void ai::onStart(){
     workerLimit = 25;
 
     supplyProviderTypeIsBuilding = supplyProviderType.isBuilding();
+    workerType = playerRace.getWorker();
 
     // Handle race-specific stuff.
     if(playerRace == Races::Zerg){
@@ -190,13 +192,13 @@ void ai::onStart(){
 
     }else if(playerRace == Races::Terran){
         infantryBuilding = UnitTypes::Terran_Barracks;
-        infantryBuildingLimit = 10;
+        infantryBuildingLimit = 5;
         infantryCost = 50;
         infantryType = UnitTypes::Terran_Marine;
 
     }else{
         infantryBuilding = UnitTypes::Protoss_Gateway;
-        infantryBuildingLimit = 10;
+        infantryBuildingLimit = 5;
         infantryCost = 100;
         infantryType = UnitTypes::Protoss_Zealot;
     }
