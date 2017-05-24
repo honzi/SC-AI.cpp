@@ -10,6 +10,7 @@ using namespace Filter;
 bool supplyNeeded;
 bool supplyProviderTypeIsBuilding;
 int infantryBuildingCheckTimer;
+int infantryBuildingCost;
 int infantryBuildingLimit;
 int infantryCost;
 int savingMinerals;
@@ -52,9 +53,9 @@ void ai::onFrame(){
         supplyNeeded = false;
     }
 
-    if(minerals > 200
+    if(minerals > infantryBuildingCost
       && infantryBuildingCount < infantryBuildingLimit){
-        savingMinerals = 200;
+        savingMinerals += infantryBuildingCost;
     }
 
     for(auto &unit : Broodwar->self()->getUnits()){
@@ -76,6 +77,11 @@ void ai::onFrame(){
 
         // Handle workers.
         if(unitType.isWorker()){
+            // Return resources.
+            if(unit->isCarryingMinerals()
+              || unit->isCarryingGas()){
+                unit->returnCargo();
+
             // Handle insufficient supply by building Pylon, building Supply Depot, or training Overlord.
             if(supplyNeeded
               && minerals >= savingMinerals
@@ -98,27 +104,18 @@ void ai::onFrame(){
 
             // Build Barracks/Gateway/Spawning Pool.
             }else if(infantryBuildingCount < infantryBuildingLimit
-              && minerals >= savingMinerals
+              && minerals >= infantryBuildingCost
               && infantryBuildingChecked + infantryBuildingCheckTimer < frameCount){
                 infantryBuildingChecked = frameCount;
 
-                if(buildBuilding(
+                buildBuilding(
                   unit,
                   infantryBuilding
-                )){
-                    savingMinerals = 0;
-                }
+                );
 
             }else if(unitIsIdle){
-                // Return resources.
-                if(unit->isCarryingMinerals()
-                  || unit->isCarryingGas()){
-                    unit->returnCargo();
-
                 // Gather resources.
-                }else{
-                    unit->gather(unit->getClosestUnit(IsMineralField || IsRefinery));
-                }
+                unit->gather(unit->getClosestUnit(IsMineralField || IsRefinery));
             }
 
         }else if(unitIsIdle){
@@ -143,7 +140,9 @@ void ai::onFrame(){
                 Position position = unit->getPosition();
                 position.x += rand() % 501 - 250;
                 position.y += rand() % 501 - 250;
-                unit->attack(position) || unit->move(position);
+                if(!unit->attack(position)){
+                    unit->move(position);
+                }
             }
         }
     }
@@ -186,18 +185,21 @@ void ai::onStart(){
     // Handle race-specific stuff.
     if(playerRace == Races::Zerg){
         infantryBuilding = UnitTypes::Zerg_Spawning_Pool;
+        infantryBuildingCost = 150;
         infantryBuildingLimit = 1;
         infantryCost = 50;
         infantryType = UnitTypes::Zerg_Zergling;
 
     }else if(playerRace == Races::Terran){
         infantryBuilding = UnitTypes::Terran_Barracks;
+        infantryBuildingCost = 200;
         infantryBuildingLimit = 5;
         infantryCost = 50;
         infantryType = UnitTypes::Terran_Marine;
 
     }else{
         infantryBuilding = UnitTypes::Protoss_Gateway;
+        infantryBuildingCost = 200;
         infantryBuildingLimit = 5;
         infantryCost = 100;
         infantryType = UnitTypes::Protoss_Zealot;
