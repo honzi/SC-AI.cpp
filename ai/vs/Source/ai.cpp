@@ -46,10 +46,16 @@ void ai::onFrame(){
     int minerals = Broodwar->self()->minerals();
     int resourceDepotBuildingCount = Broodwar->self()->allUnitCount(resourceDepotBuilding);
     int supplyTotal = Broodwar->self()->supplyTotal();
+    int supplyUsed = Broodwar->self()->supplyUsed();
     int workerCount = Broodwar->self()->allUnitCount(workerType);
 
+    int supplyCutoff = (int)(supplyUsed / 10);
+    if(supplyCutoff < 4){
+        supplyCutoff = 4;
+    }
+
     if(supplyTotal < 400
-      && supplyTotal - Broodwar->self()->supplyUsed() <= 4
+      && supplyTotal - supplyUsed <= supplyCutoff
       && Broodwar->self()->incompleteUnitCount(supplyProviderType) == 0
       && !overlordTraining){
         savingMinerals = 100;
@@ -212,14 +218,14 @@ void ai::onStart(){
 
     // Setup global variables.
     infantryBuildingChecked = 0;
-    infantryBuildingCheckTimer = 2000;
+    infantryBuildingCheckTimer = 1900;
     overlordTraining = false;
     playerRace = Broodwar->self()->getRace();
     resourceDepotBuildingChecked = 0;
-    resourceDepotBuildingCheckTimer = 2000;
+    resourceDepotBuildingCheckTimer = 1900;
     savingMinerals = 0;
     supplyChecked = 0;
-    supplyCheckTimer = 600;
+    supplyCheckTimer = 500;
     supplyNeeded = false;
     supplyProviderType = playerRace.getSupplyProvider();
     workerLimit = 25;
