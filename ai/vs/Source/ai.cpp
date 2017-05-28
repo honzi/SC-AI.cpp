@@ -7,6 +7,7 @@ using namespace BWAPI;
 using namespace Filter;
 
 // Global variables.
+bool supplyNeeded;
 int infantryBuildingCheckTimer;
 int infantryBuildingCost;
 int infantryBuildingLimit;
@@ -46,9 +47,11 @@ void ai::onFrame(){
       && Broodwar->self()->incompleteUnitCount(supplyProviderType) == 0
       && !overlordTraining){
         savingMinerals = 100;
+        supplyNeeded = true;
 
     }else{
         savingMinerals = 0;
+        supplyNeeded = false;
     }
 
     if(minerals >= infantryBuildingCost
@@ -84,6 +87,7 @@ void ai::onFrame(){
         }else if(unitType.isWorker()){
             // Handle insufficient supply by building Pylon or building Supply Depot.
             if(playerRace != Races::Zerg
+              && supplyNeeded
               && minerals >= savingMinerals
               && supplyChecked + supplyCheckTimer < frameCount){
                 supplyChecked = frameCount;
@@ -129,7 +133,8 @@ void ai::onFrame(){
         }else if(unitIsIdle){
             // Handle Command Centers, Hatcheries, and Nexuses.
             if(unitType.isResourceDepot()){
-                if(playerRace == Races::Zerg
+                if(supplyNeeded
+                  && playerRace == Races::Zerg
                   &&!overlordTraining
                   && minerals >= savingMinerals
                   && supplyChecked + supplyCheckTimer < frameCount){
@@ -197,6 +202,7 @@ void ai::onStart(){
     savingMinerals = 0;
     supplyChecked = 0;
     supplyCheckTimer = 600;
+    supplyNeeded = false;
     supplyProviderType = playerRace.getSupplyProvider();
     workerLimit = 25;
 
