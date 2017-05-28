@@ -150,7 +150,7 @@ void ai::onFrame(){
             if(unitType.isResourceDepot()){
                 if(supplyNeeded
                   && playerRace == Races::Zerg
-                  &&!overlordTraining
+                  && !overlordTraining
                   && minerals >= 100
                   && supplyChecked + supplyCheckTimer < frameCount){
                     supplyChecked = frameCount;
