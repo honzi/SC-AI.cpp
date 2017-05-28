@@ -42,8 +42,8 @@ void ai::onFrame(){
     int supplyTotal = Broodwar->self()->supplyTotal();
     int workerCount = Broodwar->self()->allUnitCount(workerType);
 
-    if(supplyTotal < 200
-      && supplyTotal - Broodwar->self()->supplyUsed() <= 3
+    if(supplyTotal < 400
+      && supplyTotal - Broodwar->self()->supplyUsed() <= 4
       && Broodwar->self()->incompleteUnitCount(supplyProviderType) == 0){
         savingMinerals = 100;
         supplyNeeded = true;
@@ -77,11 +77,6 @@ void ai::onFrame(){
 
         // Handle workers.
         if(unitType.isWorker()){
-            // Return resources.
-            if(unit->isCarryingMinerals()
-              || unit->isCarryingGas()){
-                unit->returnCargo();
-
             // Handle insufficient supply by building Pylon, building Supply Depot, or training Overlord.
             if(supplyNeeded
               && minerals >= savingMinerals
@@ -114,8 +109,15 @@ void ai::onFrame(){
                 );
 
             }else if(unitIsIdle){
+                // Return resources.
+                if(unit->isCarryingMinerals()
+                  || unit->isCarryingGas()){
+                    unit->returnCargo();
+
                 // Gather resources.
-                unit->gather(unit->getClosestUnit(IsMineralField || IsRefinery));
+                }else{
+                    unit->gather(unit->getClosestUnit(IsMineralField || IsRefinery));
+                }
             }
 
         }else if(unitIsIdle){
@@ -192,7 +194,7 @@ void ai::onStart(){
 
     }else if(playerRace == Races::Terran){
         infantryBuilding = UnitTypes::Terran_Barracks;
-        infantryBuildingCost = 200;
+        infantryBuildingCost = 150;
         infantryBuildingLimit = 5;
         infantryCost = 50;
         infantryType = UnitTypes::Terran_Marine;
