@@ -12,15 +12,20 @@ int infantryBuildingCheckTimer;
 int infantryBuildingCost;
 int infantryBuildingLimit;
 int infantryCost;
+int resourceDepotBuildingCheckTimer;
+int resourceDepotBuildingCost;
+int resourceDepotBuildingLimit;
 int savingMinerals;
 int supplyCheckTimer;
 int workerLimit;
 Race playerRace;
 static bool overlordTraining;
 static int infantryBuildingChecked;
+static int resourceDepotBuildingChecked;
 static int supplyChecked;
 UnitType infantryBuilding;
 UnitType infantryType;
+UnitType resourceDepotBuilding;
 UnitType supplyProviderType;
 UnitType workerType;
 
@@ -39,6 +44,7 @@ void ai::onFrame(){
 
     int infantryBuildingCount = Broodwar->self()->allUnitCount(infantryBuilding);
     int minerals = Broodwar->self()->minerals();
+    int resourceDepotBuildingCount = Broodwar->self()->allUnitCount(resourceDepotBuilding);
     int supplyTotal = Broodwar->self()->supplyTotal();
     int workerCount = Broodwar->self()->allUnitCount(workerType);
 
@@ -57,6 +63,10 @@ void ai::onFrame(){
     if(minerals >= infantryBuildingCost
       && infantryBuildingCount < infantryBuildingLimit){
         savingMinerals += infantryBuildingCost;
+    }
+    if(minerals >= resourceDepotBuildingCost
+      && resourceDepotBuildingCount < resourceDepotBuildingLimit){
+        savingMinerals += resourceDepotBuildingCost;
     }
 
     overlordTraining = false;
@@ -88,7 +98,7 @@ void ai::onFrame(){
             // Handle insufficient supply by building Pylon or building Supply Depot.
             if(playerRace != Races::Zerg
               && supplyNeeded
-              && minerals >= savingMinerals
+              && minerals >= 100
               && supplyChecked + supplyCheckTimer < frameCount){
                 supplyChecked = frameCount;
 
@@ -101,6 +111,17 @@ void ai::onFrame(){
                   supplyProviderType
                 );
 
+            // Build Command Centers, Hatcheries, and Nexuses.
+            }else if(resourceDepotBuildingCount < resourceDepotBuildingLimit
+              && minerals >= resourceDepotBuildingCost
+              && resourceDepotBuildingChecked + resourceDepotBuildingCheckTimer < frameCount){
+                resourceDepotBuildingChecked = frameCount;
+
+                buildBuilding(
+                  unit,
+                  resourceDepotBuilding
+                );
+
             // Build Barracks/Gateway/Spawning Pool.
             }else if(infantryBuildingCount < infantryBuildingLimit
               && minerals >= infantryBuildingCost
@@ -111,12 +132,6 @@ void ai::onFrame(){
                   unit,
                   infantryBuilding
                 );
-
-                if(playerRace == Races::Zerg){
-                    infantryBuilding = UnitTypes::Zerg_Hatchery;
-                    infantryBuildingCost = 300;
-                    infantryBuildingLimit = 5;
-                }
 
             }else if(unitIsIdle){
                 // Return resources.
@@ -136,7 +151,7 @@ void ai::onFrame(){
                 if(supplyNeeded
                   && playerRace == Races::Zerg
                   &&!overlordTraining
-                  && minerals >= savingMinerals
+                  && minerals >= 100
                   && supplyChecked + supplyCheckTimer < frameCount){
                     supplyChecked = frameCount;
 
@@ -148,7 +163,8 @@ void ai::onFrame(){
                     // Train workers.
                     unit->train(workerType);
 
-                }else if(playerRace == Races::Zerg){
+                }else if(playerRace == Races::Zerg
+                  && minerals >= savingMinerals + infantryCost){
                     // Train Zerglings.
                     unit->train(infantryType);
                 }
@@ -199,6 +215,8 @@ void ai::onStart(){
     infantryBuildingCheckTimer = 2000;
     overlordTraining = false;
     playerRace = Broodwar->self()->getRace();
+    resourceDepotBuildingChecked = 0;
+    resourceDepotBuildingCheckTimer = 2000;
     savingMinerals = 0;
     supplyChecked = 0;
     supplyCheckTimer = 600;
@@ -215,6 +233,9 @@ void ai::onStart(){
         infantryBuildingLimit = 1;
         infantryCost = 50;
         infantryType = UnitTypes::Zerg_Zergling;
+        resourceDepotBuilding = UnitTypes::Zerg_Hatchery;
+        resourceDepotBuildingCost = 300;
+        resourceDepotBuildingLimit = 5;
 
     }else if(playerRace == Races::Terran){
         infantryBuilding = UnitTypes::Terran_Barracks;
@@ -222,6 +243,9 @@ void ai::onStart(){
         infantryBuildingLimit = 5;
         infantryCost = 50;
         infantryType = UnitTypes::Terran_Marine;
+        resourceDepotBuilding = UnitTypes::Terran_Command_Center;
+        resourceDepotBuildingCost = 400;
+        resourceDepotBuildingLimit = 1;
 
     }else{
         infantryBuilding = UnitTypes::Protoss_Gateway;
@@ -229,6 +253,9 @@ void ai::onStart(){
         infantryBuildingLimit = 5;
         infantryCost = 100;
         infantryType = UnitTypes::Protoss_Zealot;
+        resourceDepotBuilding = UnitTypes::Protoss_Nexus;
+        resourceDepotBuildingCost = 400;
+        resourceDepotBuildingLimit = 1;
     }
 
     Broodwar->sendText("glhf");
