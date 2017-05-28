@@ -85,6 +85,8 @@ void ai::onFrame(){
 
                 Unit supplyBuilder = unit->getClosestUnit(GetType == supplyProviderType.whatBuilds().first
                   && (IsIdle || IsGatheringMinerals)
+                  && !IsCarryingGas
+                  && !IsCarryingMinerals
                   && IsOwned);
 
                 if(supplyProviderTypeIsBuilding){
