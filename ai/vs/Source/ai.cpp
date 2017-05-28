@@ -7,8 +7,6 @@ using namespace BWAPI;
 using namespace Filter;
 
 // Global variables.
-bool supplyNeeded;
-bool supplyProviderTypeIsBuilding;
 int infantryBuildingCheckTimer;
 int infantryBuildingCost;
 int infantryBuildingLimit;
@@ -17,6 +15,7 @@ int savingMinerals;
 int supplyCheckTimer;
 int workerLimit;
 Race playerRace;
+static bool overlordTraining;
 static int infantryBuildingChecked;
 static int supplyChecked;
 UnitType infantryBuilding;
@@ -44,19 +43,20 @@ void ai::onFrame(){
 
     if(supplyTotal < 400
       && supplyTotal - Broodwar->self()->supplyUsed() <= 4
-      && Broodwar->self()->incompleteUnitCount(supplyProviderType) == 0){
+      && Broodwar->self()->incompleteUnitCount(supplyProviderType) == 0
+      && !overlordTraining){
         savingMinerals = 100;
-        supplyNeeded = true;
 
     }else{
         savingMinerals = 0;
-        supplyNeeded = false;
     }
 
-    if(minerals > infantryBuildingCost
+    if(minerals >= infantryBuildingCost
       && infantryBuildingCount < infantryBuildingLimit){
         savingMinerals += infantryBuildingCost;
     }
+
+    overlordTraining = false;
 
     for(auto &unit : Broodwar->self()->getUnits()){
         if(!unit->exists()
@@ -75,29 +75,27 @@ void ai::onFrame(){
         bool unitIsIdle = unit->isIdle();
         UnitType unitType = unit->getType();
 
+        // Check for training overlords.
+        if(unitType == UnitTypes::Zerg_Egg
+          && unit->getBuildType() == BWAPI::UnitTypes::Zerg_Overlord){
+            overlordTraining = true;
+
         // Handle workers.
-        if(unitType.isWorker()){
-            // Handle insufficient supply by building Pylon, building Supply Depot, or training Overlord.
-            if(supplyNeeded
+        }else if(unitType.isWorker()){
+            // Handle insufficient supply by building Pylon or building Supply Depot.
+            if(playerRace != Races::Zerg
               && minerals >= savingMinerals
               && supplyChecked + supplyCheckTimer < frameCount){
                 supplyChecked = frameCount;
 
                 Unit supplyBuilder = unit->getClosestUnit(GetType == supplyProviderType.whatBuilds().first
                   && (IsIdle || IsGatheringMinerals)
-                  && !IsCarryingGas
-                  && !IsCarryingMinerals
                   && IsOwned);
 
-                if(supplyProviderTypeIsBuilding){
-                    buildBuilding(
-                      supplyBuilder,
-                      supplyProviderType
-                    );
-
-                }else{
-                    supplyBuilder->train(supplyProviderType);
-                }
+                buildBuilding(
+                  supplyBuilder,
+                  supplyProviderType
+                );
 
             // Build Barracks/Gateway/Spawning Pool.
             }else if(infantryBuildingCount < infantryBuildingLimit
@@ -109,6 +107,12 @@ void ai::onFrame(){
                   unit,
                   infantryBuilding
                 );
+
+                if(playerRace == Races::Zerg){
+                    infantryBuilding = UnitTypes::Zerg_Hatchery;
+                    infantryBuildingCost = 300;
+                    infantryBuildingLimit = 5;
+                }
 
             }else if(unitIsIdle){
                 // Return resources.
@@ -125,10 +129,23 @@ void ai::onFrame(){
         }else if(unitIsIdle){
             // Handle Command Centers, Hatcheries, and Nexuses.
             if(unitType.isResourceDepot()){
-                if(workerCount < workerLimit
+                if(playerRace == Races::Zerg
+                  &&!overlordTraining
+                  && minerals >= savingMinerals
+                  && supplyChecked + supplyCheckTimer < frameCount){
+                    supplyChecked = frameCount;
+
+                    // Train Overlords.
+                    unit->train(supplyProviderType);
+
+                }else if(workerCount < workerLimit
                   && minerals >= savingMinerals + 50){
                     // Train workers.
                     unit->train(workerType);
+
+                }else if(playerRace == Races::Zerg){
+                    // Train Zerglings.
+                    unit->train(infantryType);
                 }
 
             // Handle Barracks and Gateways.
@@ -175,21 +192,20 @@ void ai::onStart(){
     // Setup global variables.
     infantryBuildingChecked = 0;
     infantryBuildingCheckTimer = 2000;
+    overlordTraining = false;
     playerRace = Broodwar->self()->getRace();
     savingMinerals = 0;
     supplyChecked = 0;
     supplyCheckTimer = 600;
-    supplyNeeded = false;
     supplyProviderType = playerRace.getSupplyProvider();
     workerLimit = 25;
 
-    supplyProviderTypeIsBuilding = supplyProviderType.isBuilding();
     workerType = playerRace.getWorker();
 
     // Handle race-specific stuff.
     if(playerRace == Races::Zerg){
         infantryBuilding = UnitTypes::Zerg_Spawning_Pool;
-        infantryBuildingCost = 150;
+        infantryBuildingCost = 200;
         infantryBuildingLimit = 1;
         infantryCost = 50;
         infantryType = UnitTypes::Zerg_Zergling;
@@ -254,4 +270,3 @@ bool buildBuilding(Unit builder, UnitType building){
 
     return false;
 }
-
