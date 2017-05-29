@@ -19,7 +19,6 @@ int savingMinerals;
 int supplyCheckTimer;
 int workerLimit;
 Race playerRace;
-static bool overlordTraining;
 static int infantryBuildingChecked;
 static int resourceDepotBuildingChecked;
 static int supplyChecked;
@@ -56,8 +55,7 @@ void ai::onFrame(){
 
     if(supplyTotal < 400
       && supplyTotal - supplyUsed <= supplyCutoff
-      && Broodwar->self()->incompleteUnitCount(supplyProviderType) == 0
-      && !overlordTraining){
+      && Broodwar->self()->incompleteUnitCount(supplyProviderType) == 0){
         savingMinerals = 100;
         supplyNeeded = true;
 
@@ -74,8 +72,6 @@ void ai::onFrame(){
       && resourceDepotBuildingCount < resourceDepotBuildingLimit){
         savingMinerals += resourceDepotBuildingCost;
     }
-
-    overlordTraining = false;
 
     for(auto &unit : Broodwar->self()->getUnits()){
         if(!unit->exists()
@@ -94,13 +90,8 @@ void ai::onFrame(){
         bool unitIsIdle = unit->isIdle();
         UnitType unitType = unit->getType();
 
-        // Check for training overlords.
-        if(unitType == UnitTypes::Zerg_Egg
-          && unit->getBuildType() == BWAPI::UnitTypes::Zerg_Overlord){
-            overlordTraining = true;
-
         // Handle workers.
-        }else if(unitType.isWorker()){
+        if(unitType.isWorker()){
             // Handle insufficient supply by building Pylon or building Supply Depot.
             if(playerRace != Races::Zerg
               && supplyNeeded
@@ -154,9 +145,9 @@ void ai::onFrame(){
         }else if(unitIsIdle){
             // Handle Command Centers, Hatcheries, and Nexuses.
             if(unitType.isResourceDepot()){
-                if(supplyNeeded
+                if(playerRace == Races::Zerg
+                  && supplyNeeded
                   && playerRace == Races::Zerg
-                  && !overlordTraining
                   && minerals >= 100
                   && supplyChecked + supplyCheckTimer < frameCount){
                     supplyChecked = frameCount;
@@ -219,7 +210,6 @@ void ai::onStart(){
     // Setup global variables.
     infantryBuildingChecked = 0;
     infantryBuildingCheckTimer = 1900;
-    overlordTraining = false;
     playerRace = Broodwar->self()->getRace();
     resourceDepotBuildingChecked = 0;
     resourceDepotBuildingCheckTimer = 1900;
