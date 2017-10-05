@@ -95,7 +95,7 @@ void ai::onFrame(){
             // Handle insufficient supply by building Pylon or building Supply Depot.
             if(playerRace != Races::Zerg
               && supplyNeeded
-              && minerals >= 100
+              && minerals >= savingMinerals
               && supplyChecked + supplyCheckTimer < frameCount){
                 supplyChecked = frameCount;
 
@@ -148,7 +148,7 @@ void ai::onFrame(){
                 if(playerRace == Races::Zerg
                   && supplyNeeded
                   && playerRace == Races::Zerg
-                  && minerals >= 100
+                  && minerals >= savingMinerals
                   && supplyChecked + supplyCheckTimer < frameCount){
                     supplyChecked = frameCount;
 
