@@ -29,6 +29,7 @@ UnitType supplyProviderType;
 UnitType workerType;
 
 void ai::onEnd(bool isWinner){
+    Broodwar->sendText("ggwp");
 }
 
 void ai::onFrame(){

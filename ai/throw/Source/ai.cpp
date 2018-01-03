@@ -5,6 +5,7 @@ using namespace BWAPI;
 using namespace Filter;
 
 void ai::onEnd(bool isWinner){
+    Broodwar->sendText("ggwp");
 }
 
 void ai::onFrame(){
