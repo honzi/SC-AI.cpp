@@ -1,5 +1,5 @@
-#include "ai.h"
 #include <iostream>
+#include "ai.h"
 
 using namespace BWAPI;
 using namespace Filter;

@@ -1,7 +1,7 @@
-#include "ai.h"
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
+#include "ai.h"
 
 using namespace BWAPI;
 using namespace Filter;
